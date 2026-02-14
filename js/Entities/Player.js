@@ -1,5 +1,6 @@
-import { Constants } from "../Utilities/Constants.js";
 import { Bomb } from "./Bomb.js";
+import { Point } from "./Point.js";
+import { Constants } from "../Utilities/Constants.js";
 
 export class Player {
   #COLORS = {
@@ -18,7 +19,6 @@ export class Player {
     this.height = 40;
     this.speed = 0.25;
     this.bombsAllowed = 100;
-
   }
 
   update(input, stage) {
@@ -34,81 +34,149 @@ export class Player {
       this.width,
       this.height,
     );
+
+    this.ctx.font = "14px Arial";
+    this.ctx.fillStyle = "#333";
+    this.ctx.fillText(
+      `x: ${this.x}`,
+      this.x * Constants.TILE_SIZE + 10,
+      this.y * Constants.TILE_SIZE + 20,
+    );
+    this.ctx.fillText(
+      `y: ${this.y}`,
+      this.x * Constants.TILE_SIZE + 10,
+      this.y * Constants.TILE_SIZE + 30,
+    );
   }
 
   #move(input, stage) {
-    this.#moveRight(input, stage);
-    this.#moveLeft(input, stage);
-    this.#moveDown(input, stage);
-    this.#moveUp(input, stage);
-  }
-
-  #moveRight(input, stage) {
     if (input.keys["ArrowRight"]) {
-      const newX = Math.ceil(this.x + this.speed);
-      const newY = Math.round(this.y);
-      console.log(
-        "ArrowRight",
-        { y: newY, x: newX },
-        stage.logicalStage[newY][newX],
-      );
-
-      if (stage.logicalStage[newY][newX] == 1) {
-        this.x += this.speed;
-        this.color = this.#COLORS.RIGHT;
+      if (!this.#isCollidingWhenMovingRight(stage)) {
+        this.#moveRight(input, stage);
       }
     }
-  }
 
-  #moveLeft(input, stage) {
     if (input.keys["ArrowLeft"]) {
-      const newX = Math.floor(this.x - this.speed);
-      const newY = Math.round(this.y);
-      console.log(
-        "ArrowLeft",
-        { y: newY, x: newX },
-        stage.logicalStage[newY][newX],
-      );
-
-      if (stage.logicalStage[newY][newX] == 1) {
-        this.x -= this.speed;
-        this.color = this.#COLORS.LEFT;
+      if (!this.#isCollidingWhenMovingLeft(stage)) {
+        this.#moveLeft(input, stage);
       }
     }
-  }
 
-  #moveDown(input, stage) {
     if (input.keys["ArrowDown"]) {
-      const newX = Math.round(this.x);
-      const newY = Math.ceil(this.y + this.speed);
-      console.log(
-        "ArrowDown",
-        { y: newY, x: newX },
-        stage.logicalStage[newY][newX],
-      );
+      if (!this.#isCollidingWhenMovingDown(stage)) {
+        this.#moveDown(input, stage);
+      }
+    }
 
-      if (stage.logicalStage[newY][newX] == 1) {
-        this.y += this.speed;
-        this.color = this.#COLORS.DOWN;
+    if (input.keys["ArrowUp"]) {
+      if (!this.#isCollidingWhenMovingUp(stage)) {
+        this.#moveUp(input, stage);
       }
     }
   }
 
-  #moveUp(input, stage) {
-    if (input.keys["ArrowUp"]) {
-      const newX = Math.round(this.x);
-      const newY = Math.floor(this.y - this.speed);
-      console.log(
-        "ArrowUp",
-        { y: newY, x: newX },
-        stage.logicalStage[newY][newX],
-      );
+  #isCollidingWhenMovingRight(stage) {
+    return (
+      this.#checkNormalCollisionToRight(stage) ||
+      this.#checkIntermediateCollisionToRight(stage)
+    );
+  }
 
-      if (stage.logicalStage[newY][newX] == 1) {
-        this.y -= this.speed;
-        this.color = this.#COLORS.UP;
-      }
-    }
+  #checkNormalCollisionToRight(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(this.x + this.speed + (1 - this.speed), this.y),
+    );
+  }
+
+  #checkIntermediateCollisionToRight(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(this.x + this.speed + (1 - this.speed), Math.ceil(this.y)),
+    );
+  }
+
+  #isCollidingWhenMovingLeft(stage) {
+    return (
+      this.#checkNormalCollisionToLeft(stage) ||
+      this.#checkIntermediateCollisionToLeft(stage)
+    );
+  }
+
+  #checkNormalCollisionToLeft(stage) {
+    return this.#detectCollision(stage, new Point(this.x - this.speed, this.y));
+  }
+
+  #checkIntermediateCollisionToLeft(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(Math.floor(this.x - this.speed), Math.ceil(this.y)),
+    );
+  }
+
+  #isCollidingWhenMovingDown(stage) {
+    return (
+      this.#checkNormalCollisionToDown(stage) ||
+      this.#checkIntermediateCollisionToDown(stage)
+    );
+  }
+
+  #checkNormalCollisionToDown(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(this.x, this.y + this.speed + (1 - this.speed)),
+    );
+  }
+
+  #checkIntermediateCollisionToDown(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(Math.ceil(this.x), this.y + this.speed + (1 - this.speed)),
+    );
+  }
+
+  #isCollidingWhenMovingUp(stage) {
+    return (
+      this.#checkNormalCollisionToUp(stage) ||
+      this.#checkIntermediateCollisionToUp(stage)
+    );
+  }
+
+  #checkNormalCollisionToUp(stage) {
+    return this.#detectCollision(stage, new Point(this.x, this.y - this.speed));
+  }
+
+  #checkIntermediateCollisionToUp(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(Math.ceil(this.x), this.y - this.speed),
+    );
+  }
+
+  #detectCollision(stage, point) {
+    const newX = Number.parseInt(point.x);
+    const newY = Number.parseInt(point.y);
+    return stage.logicalStage[newY][newX] == 0;
+  }
+
+  #moveRight() {
+    this.x += this.speed;
+    this.color = this.#COLORS.RIGHT;
+  }
+
+  #moveLeft() {
+    this.x -= this.speed;
+    this.color = this.#COLORS.LEFT;
+  }
+
+  #moveDown() {
+    this.y += this.speed;
+    this.color = this.#COLORS.DOWN;
+  }
+
+  #moveUp() {
+    this.y -= this.speed;
+    this.color = this.#COLORS.UP;
   }
 
   #plantABomb(input, stage) {

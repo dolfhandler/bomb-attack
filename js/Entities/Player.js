@@ -4,10 +4,10 @@ import { Constants } from "../Utilities/Constants.js";
 
 export class Player {
   #COLORS = {
-    RIGHT: "#A00000",
-    DOWN: "#1199d8",
-    LEFT: "#800461",
-    UP: "#a04d00",
+    RIGHT: "#75fa70",
+    DOWN: "#75fa70",
+    LEFT: "#75fa70",
+    UP: "#75fa70",
   };
 
   constructor(ctx, x, y) {
@@ -17,13 +17,14 @@ export class Player {
     this.color = this.#COLORS.DOWN;
     this.width = 40;
     this.height = 40;
-    this.speed = 0.25;
-    this.bombsAllowed = 100;
+    this.speed = 1/8;
+    this.bombsAllowed = 3;
   }
 
   update(input, stage) {
     this.#move(input, stage);
     this.#plantABomb(input, stage);
+    this.#sendLocationToStage(stage);
   }
 
   draw() {
@@ -39,12 +40,12 @@ export class Player {
     this.ctx.fillStyle = "#333";
     this.ctx.fillText(
       `x: ${this.x}`,
-      this.x * Constants.TILE_SIZE + 10,
+      this.x * Constants.TILE_SIZE + 5,
       this.y * Constants.TILE_SIZE + 20,
     );
     this.ctx.fillText(
       `y: ${this.y}`,
-      this.x * Constants.TILE_SIZE + 10,
+      this.x * Constants.TILE_SIZE + 5,
       this.y * Constants.TILE_SIZE + 30,
     );
   }
@@ -156,7 +157,7 @@ export class Player {
   #detectCollision(stage, point) {
     const newX = Number.parseInt(point.x);
     const newY = Number.parseInt(point.y);
-    return stage.logicalStage[newY][newX] == 0;
+    return stage.logicalStage[newY][newX] != 1;
   }
 
   #moveRight() {
@@ -180,17 +181,28 @@ export class Player {
   }
 
   #plantABomb(input, stage) {
+    //TODO: mejorar este metodo, esta colocando las bombas
+    //en la posicion (x, y) del jugador y se ve raro
+    //cuando este deja las bombas
     if (input.keys["KeyA"]) {
-      const newX = Math.floor(this.x);
-      const newY = Math.floor(this.y);
-      console.log(stage.getAmountBombs());
-      if (
-        stage.logicalStage[newY][newX] == 1 &&
-        stage.getAmountBombs() < this.bombsAllowed
-      ) {
+      const newX = Number.round(this.x);
+      const newY = Number.round(this.y);
+
+      if (this.#isPossiblePlantABomb(stage, newX, newY)) {
         stage.addBomb(new Bomb(this.ctx, newX, newY));
         stage.logicalStage[newY][newX] = 2;
       }
     }
+  }
+
+  #isPossiblePlantABomb(stage, x, y) {
+    return (
+      stage.logicalStage[y][x] == 1 &&
+      stage.getAmountBombs() < this.bombsAllowed
+    );
+  }
+
+  #sendLocationToStage(stage){
+    stage.setPlayerLocation(Point.fromEntity(this));
   }
 }

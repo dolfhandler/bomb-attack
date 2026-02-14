@@ -1,9 +1,12 @@
+import { Point } from "./Entities/Point.js";
 import { Constants } from "./Utilities/Constants.js";
 
 export class Stage {
   #floor;
   #earth;
   #bombs;
+
+  #playerLocation;
 
   constructor(ctx, canvas) {
     const { width, height } = canvas;
@@ -12,6 +15,7 @@ export class Stage {
     this.width = width;
     this.height = height;
     this.#bombs = new Array();
+    this.#playerLocation = new Point(0, 0);
 
     this.#floor = "#109010";
     this.#earth = "#c78c26";
@@ -24,13 +28,13 @@ export class Stage {
       [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
       [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
       [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-      [0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-      [0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0],
-      [0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0],
-      [0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0],
-      [0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0],
-      [0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-      [0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
       [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
       [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0],
       [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -39,7 +43,12 @@ export class Stage {
   }
 
   update() {
-    this.#bombs.forEach((bomb) => bomb.explode(this.logicalStage));
+    this.#bombs.forEach((bomb) =>
+      bomb.explode(
+        this.logicalStage,
+        this.#bombs.filter((b) => b !== bomb),
+      ),
+    );
     this.#bombs = this.#bombs.filter((bomb) => !bomb.flameOut());
   }
 
@@ -69,6 +78,11 @@ export class Stage {
           Constants.TILE_SIZE,
           Constants.TILE_SIZE,
         );
+
+        this.ctx.font = "14px Arial";
+        this.ctx.fillStyle = "#333";
+        this.ctx.fillText(`x: ${this.#playerLocation.x}`, 5, 20);
+        this.ctx.fillText(`y: ${this.#playerLocation.y}`, 5, 30);
       }
     }
 
@@ -81,5 +95,9 @@ export class Stage {
 
   getAmountBombs() {
     return this.#bombs.length;
+  }
+
+  setPlayerLocation(location) {
+    this.#playerLocation = location;
   }
 }

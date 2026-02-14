@@ -1,5 +1,6 @@
 import { Constants } from "../Utilities/Constants.js";
 import { Flame } from "./Flame.js";
+import { Point } from "./Point.js";
 
 export class Bomb {
   #flames;
@@ -15,13 +16,15 @@ export class Bomb {
     this.y = y;
     this.width = TILE_SIZE;
     this.height = TILE_SIZE;
-    this.range = 5;
+    this.range = 1;
 
     this.#count = 0;
     this.#delay = 180;
 
     this.#flameCounter = 0;
     this.#flameDuration = 30;
+
+    this.canExplode = false;
 
     this.#flames = new Array();
   }
@@ -38,62 +41,108 @@ export class Bomb {
     this.#flames.forEach((flame) => flame.draw());
   }
 
-  explode(stage) {
+  explode(stage, bombs) {
+    if (this.canExplode) {
+      this.#count = this.#delay;
+    }
+
     if (this.#count < this.#delay) {
       this.#count++;
       return;
     }
 
     this.#count = 0;
-
-    const { CENTER } = Constants.POSITION;
-    this.#flames.push(new Flame(this.ctx, this.x, this.y, CENTER));
-    this.#addFlameToLeft(stage);
-    this.#addFlamesToUP(stage);
-    this.#addFlamesToRight(stage);
-    this.#addFlamesToDown(stage);
+    this.#addFlameToCenter();
+    this.#addFlamesToLeft(stage, bombs);
+    this.#addFlamesToUP(stage, bombs);
+    this.#addFlamesToRight(stage, bombs);
+    this.#addFlamesToDown(stage, bombs);
 
     stage[this.y][this.x] = 1;
   }
 
-  #addFlamesToRight(stage) {
-    const { RIGHT } = Constants.POSITION;
-    for (let i = 0; i < this.range; i++) {
-      if (stage[this.y][this.x + i + 1] == 0) break;
+  #addFlameToCenter() {
+    this.#flames.push(new Flame(this.ctx, this.x, this.y));
+  }
 
-      this.#flames.push(new Flame(this.ctx, this.x + i + 1, this.y, RIGHT));
+  #addFlamesToRight(stage, bombs) {
+    for (let i = 0; i < this.range; i++) {
+      const newX = this.x + i + 1;
+      const newY = this.y;
+
+      if (stage[newY][newX] == 0) break;
+      if (stage[newY][newX] == 2) {
+        this.#activateBombInThisLocation(new Point(newX, newY), bombs);
+        break;
+      }
+
+      this.#flames.push(new Flame(this.ctx, newX, newY));
+      stage[newY][newX] = 1;
     }
   }
 
-  #addFlameToLeft(stage) {
-    const { LEFT } = Constants.POSITION;
+  #addFlamesToLeft(stage, bombs) {
     for (let i = 0; i < this.range; i++) {
-      if (stage[this.y][this.x - i - 1] == 0) break;
+      const newX = this.x - i - 1;
+      const newY = this.y;
 
-      this.#flames.push(new Flame(this.ctx, this.x - i - 1, this.y, LEFT));
+      if (stage[newY][newX] == 0) break;
+      if (stage[newY][newX] == 2) {
+        this.#activateBombInThisLocation(new Point(newX, newY), bombs);
+        break;
+      }
+
+      this.#flames.push(new Flame(this.ctx, newX, newY));
+      stage[newY][newX] = 1;
     }
   }
 
-  #addFlamesToDown(stage) {
-    const { DOWN } = Constants.POSITION;
+  #addFlamesToDown(stage, bombs) {
     for (let i = 0; i < this.range; i++) {
-      if (stage[this.y + i + 1][this.x] == 0) break;
+      const newX = this.x;
+      const newY = this.y + i + 1;
 
-      this.#flames.push(new Flame(this.ctx, this.x, this.y + i + 1, DOWN));
+      if (stage[newY][newX] == 0) break;
+      if (stage[newY][newX] == 2) {
+        this.#activateBombInThisLocation(new Point(newX, newY), bombs);
+        break;
+      }
+
+      this.#flames.push(new Flame(this.ctx, newX, newY));
+      stage[newY][newX] = 1;
     }
   }
 
-  #addFlamesToUP(stage) {
-    const { UP } = Constants.POSITION;
+  #addFlamesToUP(stage, bombs) {
     for (let i = 0; i < this.range; i++) {
-      if (stage[this.y - i - 1][this.x] == 0) break;
+      const newX = this.x;
+      const newY = this.y - i - 1;
 
-      this.#flames.push(new Flame(this.ctx, this.x, this.y - i - 1, UP));
+      if (stage[newY][newX] == 0) break;
+      if (stage[newY][newX] == 2) {
+        this.#activateBombInThisLocation(new Point(newX, newY), bombs);
+        break;
+      }
+
+      this.#flames.push(new Flame(this.ctx, newX, newY));
+      stage[newY][newX] = 1;
+    }
+  }
+
+  #activateBombInThisLocation(point, bombs) {
+    const bombToActivate = bombs.find((bomb) =>
+      point.equals(Point.fromEntity(bomb)),
+    );
+
+    if (bombToActivate) {
+      bombToActivate.activate();
     }
   }
 
   flameOut() {
-    if (this.#flames.length == 0) return;
+    if (this.#flames.length == 0) {
+      return;
+    }
 
     if (this.#flameCounter < this.#flameDuration) {
       this.#flameCounter++;
@@ -103,5 +152,9 @@ export class Bomb {
     this.#flameCounter = 0;
     this.#flames = new Array();
     return true;
+  }
+
+  activate() {
+    this.canExplode = true;
   }
 }

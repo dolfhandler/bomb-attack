@@ -1,5 +1,6 @@
-import { Constants } from "../Utilities/Constants.js";
 import { Bomb } from "./Bomb.js";
+import { Point } from "./Point.js";
+import { Constants } from "../Utilities/Constants.js";
 
 export class Player {
   #COLORS = {
@@ -49,104 +50,107 @@ export class Player {
   }
 
   #move(input, stage) {
-    //TODO: Refactor this method to reduce cognitive complexity
     if (input.keys["ArrowRight"]) {
-      let collision = false;
-      if (
-        this.#detectCollision(stage, {
-          x: this.x + this.speed + (1 - this.speed),
-          y: this.y,
-        })
-      ) {
-        console.log("collision");
-        collision = true;
-      }
-
-      if (
-        this.#detectCollision(stage, {
-          x: this.x + this.speed + (1 - this.speed),
-          y: Math.ceil(this.y),
-        })
-      ) {
-        console.log("collision");
-        collision = true;
-      }
-
-      if (!collision) {
+      if (!this.#isCollidingWhenMovingRight(stage)) {
         this.#moveRight(input, stage);
       }
     }
 
     if (input.keys["ArrowLeft"]) {
-      let collision = false;
-      if (this.#detectCollision(stage, { x: this.x - this.speed, y: this.y })) {
-        console.log("collision");
-        collision = true;
-      }
-
-      if (
-        this.#detectCollision(stage, {
-          x: Math.floor(this.x - this.speed),
-          y: Math.ceil(this.y),
-        })
-      ) {
-        console.log("collision");
-        collision = true;
-      }
-
-      if (!collision) {
+      if (!this.#isCollidingWhenMovingLeft(stage)) {
         this.#moveLeft(input, stage);
       }
     }
 
     if (input.keys["ArrowDown"]) {
-      let collision = false;
-      if (
-        this.#detectCollision(stage, {
-          x: this.x,
-          y: this.y + this.speed + (1 - this.speed),
-        })
-      ) {
-        console.log("collision");
-        collision = true;
-      }
-
-      if (
-        this.#detectCollision(stage, {
-          x: Math.ceil(this.x),
-          y: this.y + this.speed + (1 - this.speed),
-        })
-      ) {
-        console.log("collision");
-        collision = true;
-      }
-
-      if (!collision) {
+      if (!this.#isCollidingWhenMovingDown(stage)) {
         this.#moveDown(input, stage);
       }
     }
 
     if (input.keys["ArrowUp"]) {
-      let collision = false;
-      if (this.#detectCollision(stage, { x: this.x, y: this.y - this.speed })) {
-        console.log("collision");
-        collision = true;
-      }
-
-      if (
-        this.#detectCollision(stage, {
-          x: Math.ceil(this.x),
-          y: this.y - this.speed,
-        })
-      ) {
-        console.log("collision");
-        collision = true;
-      }
-
-      if (!collision) {
+      if (!this.#isCollidingWhenMovingUp(stage)) {
         this.#moveUp(input, stage);
       }
     }
+  }
+
+  #isCollidingWhenMovingRight(stage) {
+    return (
+      this.#checkNormalCollisionToRight(stage) ||
+      this.#checkIntermediateCollisionToRight(stage)
+    );
+  }
+
+  #checkNormalCollisionToRight(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(this.x + this.speed + (1 - this.speed), this.y),
+    );
+  }
+
+  #checkIntermediateCollisionToRight(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(this.x + this.speed + (1 - this.speed), Math.ceil(this.y)),
+    );
+  }
+
+  #isCollidingWhenMovingLeft(stage) {
+    return (
+      this.#checkNormalCollisionToLeft(stage) ||
+      this.#checkIntermediateCollisionToLeft(stage)
+    );
+  }
+
+  #checkNormalCollisionToLeft(stage) {
+    return this.#detectCollision(stage, new Point(this.x - this.speed, this.y));
+  }
+
+  #checkIntermediateCollisionToLeft(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(Math.floor(this.x - this.speed), Math.ceil(this.y)),
+    );
+  }
+
+  #isCollidingWhenMovingDown(stage) {
+    return (
+      this.#checkNormalCollisionToDown(stage) ||
+      this.#checkIntermediateCollisionToDown(stage)
+    );
+  }
+
+  #checkNormalCollisionToDown(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(this.x, this.y + this.speed + (1 - this.speed)),
+    );
+  }
+
+  #checkIntermediateCollisionToDown(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(Math.ceil(this.x), this.y + this.speed + (1 - this.speed)),
+    );
+  }
+
+  #isCollidingWhenMovingUp(stage) {
+    return (
+      this.#checkNormalCollisionToUp(stage) ||
+      this.#checkIntermediateCollisionToUp(stage)
+    );
+  }
+
+  #checkNormalCollisionToUp(stage) {
+    return this.#detectCollision(stage, new Point(this.x, this.y - this.speed));
+  }
+
+  #checkIntermediateCollisionToUp(stage) {
+    return this.#detectCollision(
+      stage,
+      new Point(Math.ceil(this.x), this.y - this.speed),
+    );
   }
 
   #detectCollision(stage, point) {

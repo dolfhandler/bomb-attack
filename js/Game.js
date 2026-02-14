@@ -11,7 +11,7 @@ export class Game {
 
     this.input = new Input();
     this.stage = new Stage(ctx, canvas);
-    this.player = new Player(ctx, 1, 2);
+    this.player = new Player(ctx, 16, 2);
   }
 
   start() {

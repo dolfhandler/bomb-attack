@@ -10,6 +10,9 @@ export class Player {
     UP: "#75fa70",
   };
 
+  #count;
+  #delay;
+
   constructor(ctx, x, y) {
     this.ctx = ctx;
     this.x = x;
@@ -17,8 +20,10 @@ export class Player {
     this.color = this.#COLORS.DOWN;
     this.width = 40;
     this.height = 40;
-    this.speed = 1/8;
+    this.speed = 1 / 16;
     this.bombsAllowed = 3;
+    this.#count = 6;
+    this.#delay = 6;
   }
 
   update(input, stage) {
@@ -181,12 +186,31 @@ export class Player {
   }
 
   #plantABomb(input, stage) {
-    //TODO: mejorar este metodo, esta colocando las bombas
-    //en la posicion (x, y) del jugador y se ve raro
-    //cuando este deja las bombas
+    if(this.#count < this.#delay){
+      this.#count++;
+      return;
+    }
+    this.#count=0;
+
     if (input.keys["KeyA"]) {
-      const newX = Number.round(this.x);
-      const newY = Number.round(this.y);
+      let newX = Math.round(this.x);
+      let newY = Math.round(this.y);
+
+      if (input.keys["ArrowRight"]) {
+        newX = Math.floor(this.x);
+      }
+
+      if (input.keys["ArrowLeft"]) {
+        newX = Math.ceil(this.x);
+      }
+
+      if (input.keys["ArrowUp"]) {
+        newY = Math.ceil(this.y);
+      }
+
+      if (input.keys["ArrowDown"]) {
+        newY = Math.floor(this.y);
+      }
 
       if (this.#isPossiblePlantABomb(stage, newX, newY)) {
         stage.addBomb(new Bomb(this.ctx, newX, newY));
@@ -202,7 +226,7 @@ export class Player {
     );
   }
 
-  #sendLocationToStage(stage){
+  #sendLocationToStage(stage) {
     stage.setPlayerLocation(Point.fromEntity(this));
   }
 }

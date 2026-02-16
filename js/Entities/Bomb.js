@@ -41,7 +41,7 @@ export class Bomb {
     this.#flames.forEach((flame) => flame.draw());
   }
 
-  explode(stage, bombs) {
+  explode(stage, playerLocation, bombs) {
     if (this.canExplode) {
       this.#count = this.#delay;
     }

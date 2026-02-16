@@ -3,12 +3,12 @@ export class Input {
   constructor() {
     this.keys = {};
 
-    window.addEventListener("keydown", (e) => {
+    globalThis.addEventListener("keydown", (e) => {
       // console.log(e.code);
       this.keys[e.code] = true;
     });
 
-    window.addEventListener("keyup", (e) => {
+    globalThis.addEventListener("keyup", (e) => {
       this.keys[e.code] = false;
     });
   }

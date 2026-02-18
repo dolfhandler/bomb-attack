@@ -186,11 +186,11 @@ export class Player {
   }
 
   #plantABomb(input, stage) {
-    if(this.#count < this.#delay){
+    if (this.#count < this.#delay) {
       this.#count++;
       return;
     }
-    this.#count=0;
+    this.#count = 0;
 
     if (input.keys["KeyA"]) {
       let newX = Math.round(this.x);
@@ -212,16 +212,17 @@ export class Player {
         newY = Math.floor(this.y);
       }
 
-      if (this.#isPossiblePlantABomb(stage, newX, newY)) {
-        stage.addBomb(new Bomb(this.ctx, newX, newY));
+      const newPoint = new Point(newX, newY);
+      if (this.#isPossiblePlantABomb(stage, newPoint)) {
+        stage.addBomb(new Bomb(this.ctx, newPoint));
         stage.logicalStage[newY][newX] = 2;
       }
     }
   }
 
-  #isPossiblePlantABomb(stage, x, y) {
+  #isPossiblePlantABomb(stage, point) {
     return (
-      stage.logicalStage[y][x] == 1 &&
+      stage.logicalStage[point.y][point.x] == 1 &&
       stage.getAmountBombs() < this.bombsAllowed
     );
   }

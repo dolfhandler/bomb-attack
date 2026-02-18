@@ -9,11 +9,11 @@ export class Bomb {
   #flameCounter;
   #flameDuration;
 
-  constructor(ctx, x, y) {
+  constructor(ctx, point) {
     const { TILE_SIZE } = Constants;
     this.ctx = ctx;
-    this.x = x;
-    this.y = y;
+    this.x = point.x;
+    this.y = point.y;
     this.width = TILE_SIZE;
     this.height = TILE_SIZE;
     this.range = 1;
@@ -41,7 +41,11 @@ export class Bomb {
     this.#flames.forEach((flame) => flame.draw());
   }
 
-  explode(stage, playerLocation, bombs) {
+  update(playerLocation) {
+    this.#flames.forEach((flame) => flame.hitPlayer(playerLocation));
+  }
+
+  explode(stage, bombs) {
     if (this.canExplode) {
       this.#count = this.#delay;
     }
@@ -62,21 +66,22 @@ export class Bomb {
   }
 
   #addFlameToCenter() {
-    this.#flames.push(new Flame(this.ctx, this.x, this.y));
+    this.#flames.push(new Flame(this.ctx, new Point(this.x, this.y)));
   }
 
   #addFlamesToRight(stage, bombs) {
     for (let i = 0; i < this.range; i++) {
       const newX = this.x + i + 1;
       const newY = this.y;
+      const newPoint = new Point(newX, newY);
 
       if (stage[newY][newX] == 0) break;
       if (stage[newY][newX] == 2) {
-        this.#activateBombInThisLocation(new Point(newX, newY), bombs);
+        this.#activateBombInThisLocation(newPoint, bombs);
         break;
       }
 
-      this.#flames.push(new Flame(this.ctx, newX, newY));
+      this.#flames.push(new Flame(this.ctx, newPoint));
       stage[newY][newX] = 1;
     }
   }
@@ -85,14 +90,15 @@ export class Bomb {
     for (let i = 0; i < this.range; i++) {
       const newX = this.x - i - 1;
       const newY = this.y;
+      const newPoint = new Point(newX, newY);
 
       if (stage[newY][newX] == 0) break;
       if (stage[newY][newX] == 2) {
-        this.#activateBombInThisLocation(new Point(newX, newY), bombs);
+        this.#activateBombInThisLocation(newPoint, bombs);
         break;
       }
 
-      this.#flames.push(new Flame(this.ctx, newX, newY));
+      this.#flames.push(new Flame(this.ctx, newPoint));
       stage[newY][newX] = 1;
     }
   }
@@ -101,14 +107,15 @@ export class Bomb {
     for (let i = 0; i < this.range; i++) {
       const newX = this.x;
       const newY = this.y + i + 1;
+      const newPoint = new Point(newX, newY);
 
       if (stage[newY][newX] == 0) break;
       if (stage[newY][newX] == 2) {
-        this.#activateBombInThisLocation(new Point(newX, newY), bombs);
+        this.#activateBombInThisLocation(newPoint, bombs);
         break;
       }
 
-      this.#flames.push(new Flame(this.ctx, newX, newY));
+      this.#flames.push(new Flame(this.ctx, newPoint));
       stage[newY][newX] = 1;
     }
   }
@@ -117,14 +124,15 @@ export class Bomb {
     for (let i = 0; i < this.range; i++) {
       const newX = this.x;
       const newY = this.y - i - 1;
+      const newPoint = new Point(newX, newY);
 
       if (stage[newY][newX] == 0) break;
       if (stage[newY][newX] == 2) {
-        this.#activateBombInThisLocation(new Point(newX, newY), bombs);
+        this.#activateBombInThisLocation(newPoint, bombs);
         break;
       }
 
-      this.#flames.push(new Flame(this.ctx, newX, newY));
+      this.#flames.push(new Flame(this.ctx, newPoint));
       stage[newY][newX] = 1;
     }
   }

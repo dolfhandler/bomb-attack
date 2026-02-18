@@ -46,10 +46,12 @@ export class Stage {
     this.#bombs.forEach((bomb) =>
       bomb.explode(
         this.logicalStage,
-        this.#playerLocation,
         this.#bombs.filter((b) => b !== bomb),
       ),
     );
+
+    this.#bombs.forEach((bomb) => bomb.update(this.#playerLocation));
+
     this.#bombs = this.#bombs.filter((bomb) => !bomb.flameOut());
   }
 

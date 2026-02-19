@@ -4,11 +4,14 @@ import { Constants } from "../Utilities/Constants.js";
 
 export class Player {
   #COLORS = {
-    RIGHT: "#A00000",
-    DOWN: "#1199d8",
-    LEFT: "#800461",
-    UP: "#a04d00",
+    RIGHT: "#75fa70",
+    DOWN: "#75fa70",
+    LEFT: "#75fa70",
+    UP: "#75fa70",
   };
+
+  #count;
+  #delay;
 
   constructor(ctx, x, y) {
     this.ctx = ctx;
@@ -17,13 +20,16 @@ export class Player {
     this.color = this.#COLORS.DOWN;
     this.width = 40;
     this.height = 40;
-    this.speed = 0.25;
-    this.bombsAllowed = 100;
+    this.speed = 1 / 16;
+    this.bombsAllowed = 3;
+    this.#count = 6;
+    this.#delay = 6;
   }
 
   update(input, stage) {
     this.#move(input, stage);
     this.#plantABomb(input, stage);
+    this.#sendLocationToStage(stage);
   }
 
   draw() {
@@ -39,12 +45,12 @@ export class Player {
     this.ctx.fillStyle = "#333";
     this.ctx.fillText(
       `x: ${this.x}`,
-      this.x * Constants.TILE_SIZE + 10,
+      this.x * Constants.TILE_SIZE + 5,
       this.y * Constants.TILE_SIZE + 20,
     );
     this.ctx.fillText(
       `y: ${this.y}`,
-      this.x * Constants.TILE_SIZE + 10,
+      this.x * Constants.TILE_SIZE + 5,
       this.y * Constants.TILE_SIZE + 30,
     );
   }
@@ -156,7 +162,7 @@ export class Player {
   #detectCollision(stage, point) {
     const newX = Number.parseInt(point.x);
     const newY = Number.parseInt(point.y);
-    return stage.logicalStage[newY][newX] == 0;
+    return stage.logicalStage[newY][newX] != 1;
   }
 
   #moveRight() {
@@ -180,17 +186,48 @@ export class Player {
   }
 
   #plantABomb(input, stage) {
+    if (this.#count < this.#delay) {
+      this.#count++;
+      return;
+    }
+    this.#count = 0;
+
     if (input.keys["KeyA"]) {
-      const newX = Math.floor(this.x);
-      const newY = Math.floor(this.y);
-      console.log(stage.getAmountBombs());
-      if (
-        stage.logicalStage[newY][newX] == 1 &&
-        stage.getAmountBombs() < this.bombsAllowed
-      ) {
-        stage.addBomb(new Bomb(this.ctx, newX, newY));
+      let newX = Math.round(this.x);
+      let newY = Math.round(this.y);
+
+      if (input.keys["ArrowRight"]) {
+        newX = Math.floor(this.x);
+      }
+
+      if (input.keys["ArrowLeft"]) {
+        newX = Math.ceil(this.x);
+      }
+
+      if (input.keys["ArrowUp"]) {
+        newY = Math.ceil(this.y);
+      }
+
+      if (input.keys["ArrowDown"]) {
+        newY = Math.floor(this.y);
+      }
+
+      const newPoint = new Point(newX, newY);
+      if (this.#isPossiblePlantABomb(stage, newPoint)) {
+        stage.addBomb(new Bomb(this.ctx, newPoint));
         stage.logicalStage[newY][newX] = 2;
       }
     }
+  }
+
+  #isPossiblePlantABomb(stage, point) {
+    return (
+      stage.logicalStage[point.y][point.x] == 1 &&
+      stage.getAmountBombs() < this.bombsAllowed
+    );
+  }
+
+  #sendLocationToStage(stage) {
+    stage.setPlayerLocation(Point.fromEntity(this));
   }
 }

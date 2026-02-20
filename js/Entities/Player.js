@@ -13,14 +13,16 @@ export class Player {
   #count;
   #delay;
 
-  constructor(ctx, x, y) {
+  constructor(ctx, x, y, camera) {
     this.ctx = ctx;
     this.x = x;
     this.y = y;
+    this.camera = camera;
+
     this.color = this.#COLORS.DOWN;
     this.width = 40;
     this.height = 40;
-    this.speed = 1 / 16;
+    this.speed = 1 / 8;
     this.bombsAllowed = 3;
     this.#count = 6;
     this.#delay = 6;
@@ -168,21 +170,29 @@ export class Player {
   #moveRight() {
     this.x += this.speed;
     this.color = this.#COLORS.RIGHT;
+
+    this.camera.moveRight(this.speed);
   }
 
   #moveLeft() {
     this.x -= this.speed;
     this.color = this.#COLORS.LEFT;
+
+    this.camera.moveLeft(this.speed);
   }
 
   #moveDown() {
     this.y += this.speed;
     this.color = this.#COLORS.DOWN;
+
+    this.camera.moveDown(this.speed);
   }
 
   #moveUp() {
     this.y -= this.speed;
     this.color = this.#COLORS.UP;
+    
+    this.camera.moveUp(this.speed);
   }
 
   #plantABomb(input, stage) {

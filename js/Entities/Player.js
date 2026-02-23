@@ -22,7 +22,7 @@ export class Player {
     this.color = this.#COLORS.DOWN;
     this.width = 40;
     this.height = 40;
-    this.speed = 1 / 8;
+    this.speed = 1 / 2;
     this.bombsAllowed = 3;
     this.#count = 6;
     this.#delay = 6;
@@ -171,28 +171,28 @@ export class Player {
     this.x += this.speed;
     this.color = this.#COLORS.RIGHT;
 
-    this.camera.moveRight(this.speed);
+    this.camera.move(this.speed, 0);
   }
 
   #moveLeft() {
     this.x -= this.speed;
     this.color = this.#COLORS.LEFT;
 
-    this.camera.moveLeft(this.speed);
+    this.camera.move(-this.speed, 0);
   }
 
   #moveDown() {
     this.y += this.speed;
     this.color = this.#COLORS.DOWN;
 
-    this.camera.moveDown(this.speed);
+    this.camera.move(0, this.speed);
   }
 
   #moveUp() {
     this.y -= this.speed;
     this.color = this.#COLORS.UP;
     
-    this.camera.moveUp(this.speed);
+    this.camera.move(0, -this.speed);
   }
 
   #plantABomb(input, stage) {

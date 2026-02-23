@@ -14,8 +14,8 @@ export class Game {
 
     this.input = new Input();
     this.stage = new Stage(ctx, canvas);
-    this.camera = new Camera(new Point(6, 4), 14, 10, this.stage, ctx2);
-    this.player = new Player(ctx, 7, 5, this.camera);
+    this.camera = new Camera(new Point(6,4), 15, 10, this.stage, ctx2);
+    this.player = new Player(ctx, 12, 8, this.camera);
   }
 
   start() {
